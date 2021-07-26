@@ -3,7 +3,7 @@
 	let url: any = "";
 	let raw: any = "";
 	const crawl = async (url) => {
-	  let data = await axios.get(url);
+	  let data = await axios.get(`api/crawl?id=${url}`);
 	  console.log('data2', data);
 		raw =  data.data;
 	  console.log(raw);
