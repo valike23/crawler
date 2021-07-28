@@ -1,13 +1,77 @@
 <script lang="ts">
   import axios from 'axios';
+import { onMount } from 'svelte';
 	let url: any = "";
-	let raw: any = "";
+	let raw:string;
+	let win: Window;
+	let logo: string;
+	onMount(()=>{
+		win = window;
+	})
 	const crawl = async (url) => {
 	  let data = await axios.get(`api/crawl?id=${url}`);
-	  console.log('data2', data);
 		raw =  data.data;
-	  console.log(raw);
+		let content: Array<string> = [];
+		let test: string = JSON.parse(raw);
+		raw = test;
+		try {
+		let testArray = test.split('</head>');
+		// testArray.forEach((e,i)=>{
+		// 	//console.log(e)
+		//   if(e.search('.png') > 0){
+		// 	content.push(e);
+		//   }
+		// })
+		let workableString = testArray[0];
+		testArray = workableString.split('<head>');
+
+		let head =	win.document.createElement('head');
+			head.innerHTML = testArray[1];
+			let allLinks =head.querySelectorAll('link');
+			let tempLinks =  [];
+			allLinks.forEach((e,i)=>{
+				if(e.href && e.rel== "icon")tempLinks.push(e.href);
+				
+			})
+			let linkWithImages = "";
+			tempLinks.forEach((e: string, i)=>{
+				 linkWithImages = e
+			
+			})
+			logo = cleanImageUrl(url,linkWithImages);
+		} 
+		
+		
+		
+		catch (error) {
+			
+		}
+		
+	 
 	};
+	let cleanImageUrl = (url: string, image: string) =>{
+		
+		console.log(image);
+		let test = image.split('/');
+		if(test[2] == location.host){
+			let urlTest = url.split('/');
+			let result = urlTest[0] + "//" + urlTest[2];
+
+			console.log(test);
+			test.forEach((e,i)=>{
+				console.log(e,i)
+				if(i > 2){
+					result += '/' + e;
+				}
+			})
+			return result;
+		}
+		console.log(test)
+		if(image.startsWith('http')) return image;
+		
+
+		return "https://funforspanishteachers.com/wp-content/uploads/2018/05/blog.jpg";
+	}
   </script>
   
   <svelte:head>
@@ -42,6 +106,8 @@
   
 	<div>
 		<br><br>
+		<h3>Logo</h3>
+		<img src="{logo}" alt="logo">
 	  <h3>Raw Content</h3>
 	  <p>{raw}</p>
 	</div>
